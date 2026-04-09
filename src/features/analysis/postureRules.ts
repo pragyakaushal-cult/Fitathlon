@@ -7,6 +7,7 @@ export interface PostureRuleConfig {
   minPoseVisibility: number
   lowerBodyEngagedKneeAngleDeg: number
   upperBodyEngagedElbowAngleDeg: number
+  pushEvaluationMode: 'horizontal' | 'vertical'
   squatBottomEvaluationKneeAngleDeg: number
   squatTorsoLeanWarningDeg: number
   squatKneeCollapseRatioThreshold: number
@@ -22,6 +23,10 @@ export interface PostureRuleConfig {
   hingeExcessiveKneeDriveDeg: number
   hingeAsymmetryScoreThreshold: number
   pushDepthElbowAngleDeg: number
+  pushVerticalLockoutElbowAngleDeg: number
+  pushVerticalReachThreshold: number
+  pushVerticalTorsoLeanWarningDeg: number
+  pushVerticalKneeDriveAngleDeg: number
   pushHipDropThreshold: number
   pushHipPikeThreshold: number
   pushShoulderInstabilityThreshold: number
@@ -59,6 +64,8 @@ export interface PostureRuleMeasurements {
   rightElbowAngleDeg: number | null
   averageElbowAngleDeg: number | null
   elbowSymmetryScore: number | null
+  averageWristOverShoulderNormalized: number | null
+  minWristOverShoulderNormalized: number | null
   bodyLineAngleDeg: number | null
   bodyLineOffsetNormalized: number | null
 }
@@ -81,6 +88,7 @@ export const DEFAULT_POSTURE_RULE_CONFIG: PostureRuleConfig = {
   minPoseVisibility: 0.45,
   lowerBodyEngagedKneeAngleDeg: 150,
   upperBodyEngagedElbowAngleDeg: 150,
+  pushEvaluationMode: 'horizontal',
   squatBottomEvaluationKneeAngleDeg: 125,
   squatTorsoLeanWarningDeg: 36,
   squatKneeCollapseRatioThreshold: 0.72,
@@ -96,6 +104,10 @@ export const DEFAULT_POSTURE_RULE_CONFIG: PostureRuleConfig = {
   hingeExcessiveKneeDriveDeg: 132,
   hingeAsymmetryScoreThreshold: 70,
   pushDepthElbowAngleDeg: 112,
+  pushVerticalLockoutElbowAngleDeg: 154,
+  pushVerticalReachThreshold: 0.05,
+  pushVerticalTorsoLeanWarningDeg: 24,
+  pushVerticalKneeDriveAngleDeg: 150,
   pushHipDropThreshold: 0.04,
   pushHipPikeThreshold: 0.04,
   pushShoulderInstabilityThreshold: 72,
@@ -280,6 +292,10 @@ export function evaluatePostureRules({
     rightElbowAngleDeg: metrics?.rightElbowAngleDeg ?? null,
     averageElbowAngleDeg: metrics?.averageElbowAngleDeg ?? null,
     elbowSymmetryScore: metrics?.elbowSymmetryScore ?? null,
+    averageWristOverShoulderNormalized:
+      metrics?.averageWristOverShoulderNormalized ?? null,
+    minWristOverShoulderNormalized:
+      metrics?.minWristOverShoulderNormalized ?? null,
     bodyLineAngleDeg: metrics?.bodyLineAngleDeg ?? null,
     bodyLineOffsetNormalized: metrics?.bodyLineOffsetNormalized ?? null,
   }
@@ -307,6 +323,12 @@ export function evaluatePostureRules({
     measurements.averageElbowAngleDeg,
     resolvedConfig.upperBodyEngagedElbowAngleDeg,
   )
+  const isActiveRepPhase =
+    phase === 'descending' ||
+    phase === 'bottom' ||
+    phase === 'ascending' ||
+    phase === 'holding' ||
+    phase === 'complete'
   const isHingeActive =
     (measurements.torsoLeanDeg !== null &&
       measurements.torsoLeanDeg >= resolvedConfig.hingeActiveTorsoLeanDeg) ||
@@ -357,6 +379,40 @@ export function evaluatePostureRules({
       }
       break
     case 'push':
+      if (resolvedConfig.pushEvaluationMode === 'vertical') {
+        const hasOverheadReach =
+          measurements.minWristOverShoulderNormalized !== null &&
+          measurements.minWristOverShoulderNormalized >=
+            resolvedConfig.pushVerticalReachThreshold
+        const hasLockout =
+          measurements.averageElbowAngleDeg !== null &&
+          measurements.averageElbowAngleDeg >=
+            resolvedConfig.pushVerticalLockoutElbowAngleDeg
+        const isVerticalPushActive = isActiveRepPhase || isUpperBodyPatternActive
+
+        flags = {
+          ...defaultFlags,
+          insufficientRangeOfMotion:
+            isVerticalPushActive && (!hasOverheadReach || !hasLockout),
+          excessiveTorsoLean:
+            isVerticalPushActive &&
+            measurements.torsoLeanDeg !== null &&
+            measurements.torsoLeanDeg >=
+              resolvedConfig.pushVerticalTorsoLeanWarningDeg,
+          excessiveKneeDrive:
+            isVerticalPushActive &&
+            measurements.minKneeAngleDeg !== null &&
+            measurements.minKneeAngleDeg <
+              resolvedConfig.pushVerticalKneeDriveAngleDeg,
+          shoulderInstability:
+            isVerticalPushActive &&
+            measurements.elbowSymmetryScore !== null &&
+            measurements.elbowSymmetryScore <=
+              resolvedConfig.pushShoulderInstabilityThreshold,
+        }
+        break
+      }
+
       flags = {
         ...defaultFlags,
         insufficientRangeOfMotion:

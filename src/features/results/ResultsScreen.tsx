@@ -36,7 +36,7 @@ function getPostureTone(postureScore: number) {
 export function ResultsScreen({
   results,
   onRestart,
-  title = 'Three-squat summary',
+  title = 'Workout summary',
 }: ResultsScreenProps) {
   if (!results) {
     return (
@@ -46,7 +46,7 @@ export function ResultsScreen({
           <h2>No assessment data yet</h2>
         </div>
         <p className="results-screen__empty-copy">
-          Complete a full 3-squat assessment to generate your coaching summary.
+          Complete an assessment to generate your coaching summary.
         </p>
         <button
           type="button"
@@ -70,7 +70,7 @@ export function ResultsScreen({
         <ScoreCard
           label="Reps completed"
           value={`${results.repsCompleted}/${results.targetReps}`}
-          subtitle="Valid reps counted"
+          subtitle="Valid reps recorded"
         />
         <ScoreCard
           label="Posture score"
@@ -85,9 +85,9 @@ export function ResultsScreen({
           tone={results.movementScore >= 75 ? 'good' : 'neutral'}
         />
         <ScoreCard
-          label="Fatigue trend"
+          label="Fatigue level"
           value={formatFatigueTrend(results.fatigueTrend)}
-          subtitle="Trend across the set"
+          subtitle="Change across the set"
           tone={results.fatigueTrend === 'stable' ? 'good' : 'warning'}
         />
       </div>

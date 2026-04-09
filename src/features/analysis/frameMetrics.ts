@@ -110,6 +110,33 @@ export function createFrameMetrics({
     leftElbowAngleDeg !== null && rightElbowAngleDeg !== null
       ? (leftElbowAngleDeg + rightElbowAngleDeg) / 2
       : leftElbowAngleDeg ?? rightElbowAngleDeg
+  const torsoLength = distanceBetweenPoints(hipCenter, shoulderCenter)
+  const leftWristOverShoulderNormalized =
+    leftShoulder !== null &&
+    leftWrist !== null &&
+    torsoLength !== null &&
+    torsoLength > 0
+      ? (leftShoulder.y - leftWrist.y) / torsoLength
+      : null
+  const rightWristOverShoulderNormalized =
+    rightShoulder !== null &&
+    rightWrist !== null &&
+    torsoLength !== null &&
+    torsoLength > 0
+      ? (rightShoulder.y - rightWrist.y) / torsoLength
+      : null
+  const validWristOverShoulderValues = [
+    leftWristOverShoulderNormalized,
+    rightWristOverShoulderNormalized,
+  ].filter((value): value is number => value !== null && Number.isFinite(value))
+  const averageWristOverShoulderNormalized =
+    validWristOverShoulderValues.length === 2
+      ? (validWristOverShoulderValues[0] + validWristOverShoulderValues[1]) / 2
+      : validWristOverShoulderValues[0] ?? null
+  const minWristOverShoulderNormalized =
+    validWristOverShoulderValues.length > 0
+      ? Math.min(...validWristOverShoulderValues)
+      : null
   const torsoLeanDeg = torsoLeanRelativeToVertical(hipCenter, shoulderCenter)
   const bodyLineAngleDeg = angleBetweenThreePoints(
     shoulderCenter,
@@ -166,6 +193,10 @@ export function createFrameMetrics({
       rightElbowAngleDeg,
       18,
     ),
+    leftWristOverShoulderNormalized,
+    rightWristOverShoulderNormalized,
+    averageWristOverShoulderNormalized,
+    minWristOverShoulderNormalized,
     torsoLeanDeg,
     bodyLineAngleDeg,
     bodyLineOffsetNormalized,

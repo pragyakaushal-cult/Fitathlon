@@ -35,7 +35,7 @@ export function useCalibration({
     const nextBaseline = createSquatBaseline(landmarks)
 
     if (!canCapture || !nextBaseline) {
-      setError('Stand fully in frame and hold still before calibrating.')
+      setError('Stand fully in frame and hold still before capturing your baseline.')
       return false
     }
 
@@ -58,8 +58,7 @@ export function useCalibration({
         canCapture: true,
         baseline,
         capturedAtMs,
-        message:
-          'Standing baseline captured. You can start the 3-squat form check.',
+        message: 'Baseline captured. You can start the assessment.',
         error: null,
         captureBaseline,
         resetBaseline,

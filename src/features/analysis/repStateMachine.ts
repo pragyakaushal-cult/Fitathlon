@@ -6,6 +6,7 @@ export type SquatPhase =
   | 'descending'
   | 'bottom'
   | 'ascending'
+  | 'holding'
   | 'complete'
 
 type DepthMode = 'normalized' | 'absolute' | null
