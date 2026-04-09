@@ -8,6 +8,10 @@ import type {
 export const POSE_LANDMARK_INDEX = {
   leftShoulder: 11,
   rightShoulder: 12,
+  leftElbow: 13,
+  rightElbow: 14,
+  leftWrist: 15,
+  rightWrist: 16,
   leftHip: 23,
   rightHip: 24,
   leftKnee: 25,
@@ -197,6 +201,10 @@ export function mapSquatLandmarks(
   return {
     leftShoulder: safeLandmarks[POSE_LANDMARK_INDEX.leftShoulder] ?? null,
     rightShoulder: safeLandmarks[POSE_LANDMARK_INDEX.rightShoulder] ?? null,
+    leftElbow: safeLandmarks[POSE_LANDMARK_INDEX.leftElbow] ?? null,
+    rightElbow: safeLandmarks[POSE_LANDMARK_INDEX.rightElbow] ?? null,
+    leftWrist: safeLandmarks[POSE_LANDMARK_INDEX.leftWrist] ?? null,
+    rightWrist: safeLandmarks[POSE_LANDMARK_INDEX.rightWrist] ?? null,
     leftHip: safeLandmarks[POSE_LANDMARK_INDEX.leftHip] ?? null,
     rightHip: safeLandmarks[POSE_LANDMARK_INDEX.rightHip] ?? null,
     leftKnee: safeLandmarks[POSE_LANDMARK_INDEX.leftKnee] ?? null,

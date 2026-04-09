@@ -6,6 +6,7 @@ import './results.css'
 interface ResultsScreenProps {
   results: AssessmentResults | null
   onRestart: () => void
+  title?: string
 }
 
 function formatFatigueTrend(fatigueTrend: AssessmentResults['fatigueTrend']) {
@@ -32,7 +33,11 @@ function getPostureTone(postureScore: number) {
   return 'warning' as const
 }
 
-export function ResultsScreen({ results, onRestart }: ResultsScreenProps) {
+export function ResultsScreen({
+  results,
+  onRestart,
+  title = 'Three-squat summary',
+}: ResultsScreenProps) {
   if (!results) {
     return (
       <article className="card">
@@ -58,7 +63,7 @@ export function ResultsScreen({ results, onRestart }: ResultsScreenProps) {
     <article className="card">
       <div className="card-header">
         <p className="section-label">Results</p>
-        <h2>Three-squat summary</h2>
+        <h2>{title}</h2>
       </div>
 
       <div className="results-screen__grid">

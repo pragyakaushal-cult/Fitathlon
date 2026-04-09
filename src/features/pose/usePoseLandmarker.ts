@@ -55,6 +55,7 @@ export function usePoseLandmarker(
   const hasInitializedRef = useRef(false)
   const lastVideoTimeRef = useRef(-1)
   const lastInferenceStartedAtMsRef = useRef(0)
+  const lastInferenceTimestampMsRef = useRef(0)
   const lastPersonStatusRef = useRef<PosePersonStatus>('not-detected')
   const lastPersonSeenAtMsRef = useRef<number | null>(null)
   const configRef = useRef(config)
@@ -90,6 +91,21 @@ export function usePoseLandmarker(
       window.cancelAnimationFrame(animationFrameIdRef.current)
       animationFrameIdRef.current = null
     }
+  }, [])
+
+  const getNextInferenceTimestampMs = useCallback(() => {
+    // MediaPipe video graphs require strictly increasing timestamps for every
+    // detectForVideo call. `video.currentTime` can restart from zero after a
+    // stream reset and can also lag behind an earlier `performance.now()`-based
+    // timestamp, so the graph must use a single monotonic clock source.
+    const nextTimestampMs = Math.max(
+      performance.now(),
+      lastInferenceTimestampMsRef.current + 1,
+    )
+
+    lastInferenceTimestampMsRef.current = nextTimestampMs
+
+    return nextTimestampMs
   }, [])
 
   const detectNextFrame = useCallback(async () => {
@@ -153,10 +169,7 @@ export function usePoseLandmarker(
     lastInferenceStartedAtMsRef.current = nowMs
 
     try {
-      const timestampMs =
-        videoElement.currentTime > 0
-          ? videoElement.currentTime * 1000
-          : performance.now()
+      const timestampMs = getNextInferenceTimestampMs()
       const nextResult = await poseLandmarkerService.detectForVideo(
         videoElement,
         timestampMs,
@@ -212,7 +225,14 @@ export function usePoseLandmarker(
     animationFrameIdRef.current = window.requestAnimationFrame(() => {
       void detectNextFrame()
     })
-  }, [cleanupLoop, enabled, logDebug, updatePersonStatus, videoRef])
+  }, [
+    cleanupLoop,
+    enabled,
+    getNextInferenceTimestampMs,
+    logDebug,
+    updatePersonStatus,
+    videoRef,
+  ])
 
   const initialize = useCallback(async () => {
     setError(null)
