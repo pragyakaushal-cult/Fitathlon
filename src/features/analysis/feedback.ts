@@ -50,6 +50,9 @@ export interface BuildPostureFeedbackOptions {
   phase?: SquatPhase | null
   ruleConfig?: Partial<PostureRuleConfig>
   scoreWeights?: Partial<PostureScoreWeights>
+  warningOverrides?: Partial<
+    Record<PostureWarningKey, Partial<PostureWarning>>
+  >
 }
 
 const WARNING_LIBRARY: Record<PostureWarningKey, PostureWarning> = {
@@ -145,6 +148,7 @@ export function buildPostureFeedback({
   phase,
   ruleConfig,
   scoreWeights,
+  warningOverrides,
 }: BuildPostureFeedbackOptions): PostureFeedback {
   const ruleEvaluation = evaluatePostureRules({
     metrics,
@@ -160,7 +164,10 @@ export function buildPostureFeedback({
 
   const triggeredWarnings = WARNING_ORDER.filter(
     (key) => ruleEvaluation.flags[key],
-  ).map((key) => WARNING_LIBRARY[key])
+  ).map((key) => ({
+    ...WARNING_LIBRARY[key],
+    ...warningOverrides?.[key],
+  }))
 
   return {
     activeWarning: triggeredWarnings[0] ?? null,

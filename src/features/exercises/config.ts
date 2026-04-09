@@ -60,7 +60,7 @@ const upperBodyPush = [
   createExercise({
     analysisProfile: 'push',
     category: 'upper_body',
-    description: `Live posture tracking for ${label.toLowerCase()} with camera framing, visibility confidence, and full-body pose overlay.`,
+    description: `Live coaching for ${label.toLowerCase()} with camera framing, visibility checks, and a full-body pose overlay.`,
     family: 'Push',
     focus: ['Shoulder stack', 'Arm path', 'Trunk alignment'],
     label,
@@ -82,7 +82,7 @@ const upperBodyPull = [
   createExercise({
     analysisProfile: 'pull',
     category: 'upper_body',
-    description: `Live posture tracking for ${label.toLowerCase()} with stable pose detection and movement visibility checks.`,
+    description: `Live coaching for ${label.toLowerCase()} with stable pose tracking and movement visibility checks.`,
     family: 'Pull',
     focus: ['Shoulder control', 'Arm path', 'Torso posture'],
     label,
@@ -103,7 +103,7 @@ const upperBodyCore = [
   createExercise({
     analysisProfile: 'core',
     category: 'upper_body',
-    description: `Live posture tracking for ${label.toLowerCase()} focused on trunk stability, alignment, and reliable landmark visibility.`,
+    description: `Live coaching for ${label.toLowerCase()} focused on trunk stability, alignment, and reliable landmark tracking.`,
     family: 'Core',
     focus: ['Trunk stability', 'Hip alignment', 'Balance'],
     label,
@@ -124,7 +124,7 @@ const lowerBodySquats = [
   createExercise({
     analysisProfile: 'squat',
     category: 'lower_body',
-    description: `Full squat scoring for ${label.toLowerCase()} with baseline calibration, rep counting, live form cues, and a 3-rep summary.`,
+    description: `Full assessment for ${label.toLowerCase()} with baseline calibration, rep counting, live coaching, and a scored summary.`,
     family: 'Squats',
     focus: ['Hip depth', 'Knee angle', 'Torso lean'],
     label,
@@ -143,7 +143,7 @@ const lowerBodyLunges = [
   createExercise({
     analysisProfile: 'lunge',
     category: 'lower_body',
-    description: `Lunge-form tracking for ${label.toLowerCase()} with split-stance monitoring, balance checks, and live posture cues.`,
+    description: `Live coaching for ${label.toLowerCase()} with split-stance tracking, balance checks, and posture cues.`,
     family: 'Lunges',
     focus: ['Split stance', 'Knee tracking', 'Balance'],
     label,
@@ -176,7 +176,7 @@ const lowerBodyGlutes = [
   createExercise({
     analysisProfile,
     category: 'lower_body',
-    description: `Live tracking for ${label.toLowerCase()} with focus on pelvic control, hip drive, and clean pose visibility.`,
+    description: `Live coaching for ${label.toLowerCase()} with a focus on hip drive, pelvic control, and stable tracking.`,
     family: 'Glutes / Hips',
     focus: ['Hip drive', 'Pelvic control', 'Balance'],
     label,
@@ -193,7 +193,7 @@ const lowerBodyHinge = [
   createExercise({
     analysisProfile: 'hinge',
     category: 'lower_body',
-    description: `Hinge-form tracking for ${label.toLowerCase()} with hip hinge monitoring, knee-drive checks, and live posture cues.`,
+    description: `Live coaching for ${label.toLowerCase()} with hip-hinge tracking, knee-drive checks, and posture cues.`,
     family: 'Deadlifts / Hinge',
     focus: ['Hip hinge', 'Back angle', 'Balance'],
     label,
@@ -222,7 +222,7 @@ const lowerBodyFunctional = [
   createExercise({
     analysisProfile,
     category: 'lower_body',
-    description: `Live movement tracking for ${label.toLowerCase()} with visible joint overlay and motion stability feedback.`,
+    description: `Live coaching for ${label.toLowerCase()} with joint overlay and movement-control feedback.`,
     family: 'Functional Lower Body',
     focus: ['Movement path', 'Balance', 'Control'],
     label,

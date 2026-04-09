@@ -44,6 +44,10 @@ export interface FrameMetrics {
   rightElbowAngleDeg: number | null
   averageElbowAngleDeg: number | null
   elbowSymmetryScore: number | null
+  leftWristOverShoulderNormalized: number | null
+  rightWristOverShoulderNormalized: number | null
+  averageWristOverShoulderNormalized: number | null
+  minWristOverShoulderNormalized: number | null
   torsoLeanDeg: number | null
   bodyLineAngleDeg: number | null
   bodyLineOffsetNormalized: number | null

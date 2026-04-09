@@ -8,19 +8,13 @@ export type FormCheckStep =
   | 'assessment'
   | 'results'
 
-export type CalibrationStatus =
-  | 'idle'
-  | 'stabilizing'
-  | 'ready'
-  | 'captured'
-  | 'error'
+export type CalibrationStatus = 'idle' | 'ready' | 'captured' | 'error'
 
 export interface CalibrationState {
   status: CalibrationStatus
   canCapture: boolean
   baseline: SquatBaseline | null
   capturedAtMs: number | null
-  progress: number
   message: string
   error: string | null
 }

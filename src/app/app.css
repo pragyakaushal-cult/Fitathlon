@@ -65,6 +65,79 @@
   z-index: 2;
 }
 
+.hero-panel__control-stack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  width: auto;
+}
+
+.voice-toggle {
+  width: 212px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 54px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--button-secondary-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 520ms ease,
+    color 280ms ease,
+    box-shadow 220ms ease;
+}
+
+.voice-toggle:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.voice-toggle:active {
+  transform: translateY(0) scale(0.988);
+}
+
+.voice-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--interactive-focus-ring);
+}
+
+.voice-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.voice-toggle--active {
+  border-color: color-mix(in srgb, var(--cool-accent) 26%, transparent);
+  background:
+    linear-gradient(180deg, rgba(160, 232, 255, 0.14), rgba(120, 197, 235, 0.06)),
+    var(--ok-soft);
+}
+
+.voice-toggle__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.voice-toggle__value {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
 .eyebrow {
   margin: 0 0 12px;
   font-size: 0.77rem;
@@ -170,6 +243,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.92fr);
   gap: 28px;
+  align-items: start;
 }
 
 .theme-toggle {
@@ -679,10 +753,20 @@
     justify-self: stretch;
   }
 
+  .hero-panel__control-stack {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .theme-toggle {
     width: 100%;
     max-width: 100%;
     justify-content: space-between;
+  }
+
+  .voice-toggle {
+    width: 100%;
   }
 
   .theme-toggle__track {

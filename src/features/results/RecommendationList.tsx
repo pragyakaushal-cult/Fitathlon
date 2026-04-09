@@ -10,7 +10,7 @@ export function RecommendationList({
   const safeRecommendations =
     recommendations.length > 0
       ? recommendations
-      : ['Form looked stable across the set.']
+      : ['Form stayed consistent across the set.']
 
   return (
     <section className="results-recommendations">

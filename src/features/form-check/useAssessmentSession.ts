@@ -16,7 +16,7 @@ export interface UseAssessmentSessionOptions {
   phase: SquatPhase
   postureFeedback: PostureFeedback | null
   timestampMs: number | null
-  targetReps?: number
+  targetReps: number
 }
 
 export interface UseAssessmentSessionReturn extends AssessmentSessionState {
@@ -30,8 +30,6 @@ interface RepAccumulator {
   recommendationCounts: Map<string, number>
   seenSignal: boolean
 }
-
-const DEFAULT_TARGET_REPS = 3
 
 function createEmptyAccumulator(): RepAccumulator {
   return {
@@ -115,7 +113,7 @@ export function useAssessmentSession({
   phase,
   postureFeedback,
   timestampMs,
-  targetReps = DEFAULT_TARGET_REPS,
+  targetReps,
 }: UseAssessmentSessionOptions): UseAssessmentSessionReturn {
   const [status, setStatus] = useState<'idle' | 'running' | 'complete'>('idle')
   const [repSummaries, setRepSummaries] = useState<AssessmentRepSummary[]>([])
@@ -150,6 +148,7 @@ export function useAssessmentSession({
       phase === 'descending' ||
       phase === 'bottom' ||
       phase === 'ascending' ||
+      phase === 'holding' ||
       phase === 'complete'
 
     if (!isRepActive) {
