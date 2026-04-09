@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { buildPostureFeedback } from '@/features/analysis/feedback'
 import { createFrameMetrics } from '@/features/analysis/frameMetrics'
@@ -19,6 +19,7 @@ import { useAssessmentSession } from '@/features/form-check/useAssessmentSession
 import { PoseCanvasOverlay } from '@/features/pose/PoseCanvasOverlay'
 import { usePoseLandmarker } from '@/features/pose/usePoseLandmarker'
 import { ResultsScreen } from '@/features/results/ResultsScreen'
+import { useVoiceCoach } from '@/features/voice/useVoiceCoach'
 import './FormCheckFlow.css'
 
 type FlowStep =
@@ -33,6 +34,7 @@ type StatusTone = 'ok' | 'warn' | 'error' | 'muted'
 type ThemeMode = 'studio' | 'night'
 
 const THEME_STORAGE_KEY = 'cult-copilot-theme'
+const VOICE_STORAGE_KEY = 'cult-copilot-voice-id'
 
 const CATEGORY_COPY: Record<
   ExerciseCategory,
@@ -203,6 +205,18 @@ function getStatusTone(status: string): StatusTone {
   }
 }
 
+function getVoiceStatusTone(status: 'unsupported' | 'ready' | 'muted'): StatusTone {
+  switch (status) {
+    case 'ready':
+      return 'ok'
+    case 'unsupported':
+      return 'warn'
+    case 'muted':
+    default:
+      return 'muted'
+  }
+}
+
 function getTrackingHeadline(
   selectedExercise: ExerciseConfig | null,
   isSquatProfile: boolean,
@@ -236,6 +250,17 @@ function getInitialThemeMode(): ThemeMode {
   return resolvedTheme
 }
 
+function getInitialVoiceId() {
+  if (typeof window === 'undefined') {
+    return 'auto'
+  }
+
+  const storedVoiceId = window.localStorage.getItem(VOICE_STORAGE_KEY)
+  return storedVoiceId && storedVoiceId.trim().length > 0
+    ? storedVoiceId
+    : 'auto'
+}
+
 export function FormCheckFlow() {
   const [step, setStep] = useState<FlowStep>('intro')
   const [selectedCategory, setSelectedCategory] =
@@ -250,6 +275,7 @@ export function FormCheckFlow() {
 
     return new URLSearchParams(window.location.search).has('debug')
   }, [])
+  const initialVoiceId = useMemo(() => getInitialVoiceId(), [])
 
   const selectedExercise = useMemo(
     () => (selectedExerciseId ? getExerciseById(selectedExerciseId) : null),
@@ -277,6 +303,18 @@ export function FormCheckFlow() {
     preferredWidth: 1280,
     preferredHeight: 720,
     debug: debugMode,
+  })
+  const voiceCoach = useVoiceCoach({
+    debug: debugMode,
+    defaultMuted: false,
+    lang: 'en-US',
+    voicePreference: 'female',
+    defaultVoiceId: initialVoiceId,
+    rate: 0.92,
+    pitch: 1.08,
+    volume: 0.9,
+    minGapMs: 2200,
+    repeatGapMs: 7500,
   })
   const pose = usePoseLandmarker({
     videoRef: webcam.videoRef,
@@ -337,6 +375,7 @@ export function FormCheckFlow() {
     timestampMs: frameMetrics?.timestampMs ?? null,
     targetReps: 3,
   })
+  const lastAnnouncedRepRef = useRef(0)
 
   useEffect(() => {
     if (!isSquatProfile || step !== 'assessment' || assessment.status !== 'idle') {
@@ -359,6 +398,70 @@ export function FormCheckFlow() {
       window.clearTimeout(resultsTimer)
     }
   }, [assessment.isComplete, isSquatProfile, step])
+
+  useEffect(() => {
+    if (step !== 'assessment' || !selectedExercise) {
+      return
+    }
+
+    if (pose.personStatus !== 'detected') {
+      const isLost = pose.personStatus === 'lost'
+      voiceCoach.announce({
+        id: isLost ? 'person-lost' : 'person-not-detected',
+        text: isLost
+          ? 'I lost tracking. Step back so your full body is visible.'
+          : 'Step into frame so I can track your movement.',
+        priority: 'critical',
+        repeatGapMs: 6000,
+      })
+      return
+    }
+
+    if (postureFeedback.activeWarning) {
+      voiceCoach.announce({
+        id: `warning-${postureFeedback.activeWarning.key}`,
+        text: `${postureFeedback.activeWarning.title}. ${postureFeedback.activeWarning.recommendation}`,
+        priority: 'high',
+        repeatGapMs: 7000,
+      })
+    }
+  }, [
+    pose.personStatus,
+    postureFeedback.activeWarning,
+    selectedExercise,
+    step,
+    voiceCoach,
+  ])
+
+  useEffect(() => {
+    if (!isSquatProfile || step !== 'assessment') {
+      lastAnnouncedRepRef.current = repDetection.repCount
+      return
+    }
+
+    if (repDetection.repCount <= lastAnnouncedRepRef.current) {
+      return
+    }
+
+    lastAnnouncedRepRef.current = repDetection.repCount
+    const repsRemaining = Math.max(assessment.targetReps - repDetection.repCount, 0)
+
+    voiceCoach.announce({
+      id: `rep-${repDetection.repCount}`,
+      text:
+        repsRemaining > 0
+          ? `Rep ${repDetection.repCount} complete. ${repsRemaining} to go.`
+          : 'Great work. Assessment complete.',
+      priority: 'high',
+      repeatGapMs: 1000,
+    })
+  }, [
+    assessment.targetReps,
+    isSquatProfile,
+    repDetection.repCount,
+    step,
+    voiceCoach,
+  ])
 
   useEffect(() => {
     if (typeof document === 'undefined' || typeof window === 'undefined') {
@@ -485,6 +588,24 @@ export function FormCheckFlow() {
     setStep('exercise')
   }
 
+  const handleVoiceSelection = (voiceId: string) => {
+    voiceCoach.setSelectedVoiceId(voiceId)
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(VOICE_STORAGE_KEY, voiceId)
+    }
+  }
+
+  const handleVoiceTest = () => {
+    voiceCoach.announce({
+      id: `voice-preview-${voiceCoach.selectedVoiceId}`,
+      text: 'Voice preview. I will coach your form in real time.',
+      priority: 'critical',
+      minGapMs: 0,
+      repeatGapMs: 0,
+    })
+  }
+
   return (
     <main className="app-shell">
       <section className="hero-panel">
@@ -547,6 +668,18 @@ export function FormCheckFlow() {
           <span className="status-pill status-pill--muted">
             Workout: {selectedExercise?.shortLabel ?? 'Choose one'}
           </span>
+          <span
+            className={`status-pill status-pill--${getVoiceStatusTone(
+              voiceCoach.status,
+            )}`}
+          >
+            Voice:{' '}
+            {voiceCoach.isSupported
+              ? voiceCoach.isMuted
+                ? 'muted'
+                : 'on'
+              : 'unsupported'}
+          </span>
         </div>
 
         <Stepper currentStep={step} selectedExercise={selectedExercise} />
@@ -574,6 +707,45 @@ export function FormCheckFlow() {
               .join(' ')}
           >
             {webcam.error?.message ?? pose.error?.message ?? trackingWarning}
+          </div>
+
+          <div className="form-flow__assist-toolbar">
+            <select
+              className="form-flow__voice-select"
+              value={voiceCoach.selectedVoiceId}
+              onChange={(event) => handleVoiceSelection(event.target.value)}
+              disabled={!voiceCoach.isSupported}
+              aria-label="Choose coaching voice"
+            >
+              <option value="auto">Auto (female preferred)</option>
+              {voiceCoach.availableVoices.map((voiceOption) => (
+                <option key={voiceOption.id} value={voiceOption.id}>
+                  {voiceOption.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              className="form-flow__button form-flow__button--secondary"
+              onClick={handleVoiceTest}
+              disabled={!voiceCoach.isSupported || voiceCoach.isMuted}
+            >
+              Test voice
+            </button>
+
+            <button
+              type="button"
+              className="form-flow__button form-flow__button--secondary"
+              onClick={voiceCoach.toggleMuted}
+              disabled={!voiceCoach.isSupported}
+            >
+              {voiceCoach.isSupported
+                ? voiceCoach.isMuted
+                  ? 'Enable voice coach'
+                  : 'Mute voice coach'
+                : 'Voice not supported'}
+            </button>
           </div>
 
           <WebcamView
