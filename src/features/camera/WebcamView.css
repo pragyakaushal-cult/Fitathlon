@@ -83,75 +83,6 @@
     box-shadow 520ms ease;
 }
 
-.webcam-view__stage:fullscreen,
-.webcam-view__stage:-webkit-full-screen,
-.webcam-view__stage--fullscreen {
-  width: 100vw;
-  height: 100vh;
-  aspect-ratio: auto;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-  background: #000;
-}
-
-.webcam-view__stage:fullscreen::before,
-.webcam-view__stage:-webkit-full-screen::before,
-.webcam-view__stage--fullscreen::before {
-  inset: -10%;
-  opacity: 0.26;
-}
-
-.webcam-view__stage:fullscreen::after,
-.webcam-view__stage:-webkit-full-screen::after,
-.webcam-view__stage--fullscreen::after {
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42)),
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.06), transparent 28%);
-}
-
-.webcam-view__stage-control {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 4;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--button-secondary-border);
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.014)),
-    rgba(5, 9, 15, 0.58);
-  color: var(--heading);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(14px);
-  transition:
-    transform 180ms ease,
-    background 520ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.webcam-view__stage-control:hover {
-  transform: translateY(-1px);
-  border-color: var(--border-strong);
-  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.22);
-}
-
-.webcam-view__stage-control:active {
-  transform: translateY(0) scale(0.988);
-}
-
-.webcam-view__stage-control:focus-visible {
-  outline: none;
-  box-shadow:
-    0 18px 30px rgba(0, 0, 0, 0.22),
-    var(--interactive-focus-ring);
-}
-
 .webcam-view__stage::before {
   content: '';
   position: absolute;
@@ -185,12 +116,6 @@
   transition:
     background 520ms ease,
     filter 320ms ease;
-}
-
-.webcam-view__stage:fullscreen .webcam-view__video,
-.webcam-view__stage:-webkit-full-screen .webcam-view__video,
-.webcam-view__stage--fullscreen .webcam-view__video {
-  height: 100%;
 }
 
 .webcam-view__overlay {
@@ -309,12 +234,6 @@
   cursor: progress;
 }
 
-.webcam-view__fullscreen-note {
-  margin: -4px 0 0;
-  color: var(--warn);
-  line-height: 1.6;
-}
-
 @keyframes stage-sheen {
   from {
     transform: rotate(0deg) scale(1);
@@ -334,10 +253,5 @@
 
   .webcam-view__stage {
     border-radius: 24px;
-  }
-
-  .webcam-view__stage-control {
-    top: 12px;
-    right: 12px;
   }
 }

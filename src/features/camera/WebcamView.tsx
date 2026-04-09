@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import './WebcamView.css'
 import type { WebcamStatus, WebcamViewProps } from './types'
 
@@ -39,58 +38,6 @@ function getOverlayCopy(status: WebcamStatus) {
   }
 }
 
-type FullscreenDocument = Document & {
-  webkitExitFullscreen?: () => Promise<void> | void
-  webkitFullscreenElement?: Element | null
-  webkitFullscreenEnabled?: boolean
-}
-
-type FullscreenElement = HTMLDivElement & {
-  webkitRequestFullscreen?: () => Promise<void> | void
-}
-
-function getActiveFullscreenElement(documentRef: FullscreenDocument) {
-  return (
-    documentRef.fullscreenElement ??
-    documentRef.webkitFullscreenElement ??
-    null
-  )
-}
-
-function isFullscreenSupported(documentRef: FullscreenDocument) {
-  return !!(
-    documentRef.fullscreenEnabled || documentRef.webkitFullscreenEnabled
-  )
-}
-
-async function enterFullscreen(element: FullscreenElement) {
-  if (element.requestFullscreen) {
-    await element.requestFullscreen()
-    return
-  }
-
-  if (element.webkitRequestFullscreen) {
-    await element.webkitRequestFullscreen()
-    return
-  }
-
-  throw new Error('Fullscreen is not supported on this element.')
-}
-
-async function exitFullscreen(documentRef: FullscreenDocument) {
-  if (documentRef.exitFullscreen) {
-    await documentRef.exitFullscreen()
-    return
-  }
-
-  if (documentRef.webkitExitFullscreen) {
-    await documentRef.webkitExitFullscreen()
-    return
-  }
-
-  throw new Error('Fullscreen exit is not supported in this browser.')
-}
-
 export function WebcamView({
   webcam,
   className,
@@ -103,72 +50,6 @@ export function WebcamView({
 }: WebcamViewProps) {
   const overlayCopy = getOverlayCopy(webcam.status)
   const rootClassName = ['webcam-view', className].filter(Boolean).join(' ')
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [fullscreenError, setFullscreenError] = useState<string | null>(null)
-  const fullscreenAvailable = useMemo(() => {
-    if (typeof document === 'undefined') {
-      return false
-    }
-
-    return isFullscreenSupported(document as FullscreenDocument)
-  }, [])
-
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return
-    }
-
-    const handleFullscreenChange = () => {
-      setIsFullscreen(
-        getActiveFullscreenElement(document as FullscreenDocument) ===
-          webcam.containerRef.current,
-      )
-    }
-
-    handleFullscreenChange()
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    document.addEventListener(
-      'webkitfullscreenchange',
-      handleFullscreenChange as EventListener,
-    )
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-      document.removeEventListener(
-        'webkitfullscreenchange',
-        handleFullscreenChange as EventListener,
-      )
-    }
-  }, [webcam.containerRef])
-
-  const handleToggleFullscreen = useCallback(async () => {
-    if (typeof document === 'undefined') {
-      return
-    }
-
-    const containerElement = webcam.containerRef.current as FullscreenElement | null
-    const fullscreenDocument = document as FullscreenDocument
-
-    if (!containerElement || !isFullscreenSupported(fullscreenDocument)) {
-      setFullscreenError('Fullscreen is not available in this browser.')
-      return
-    }
-
-    try {
-      setFullscreenError(null)
-
-      if (getActiveFullscreenElement(fullscreenDocument) === containerElement) {
-        await exitFullscreen(fullscreenDocument)
-      } else {
-        await enterFullscreen(containerElement)
-      }
-    } catch {
-      setFullscreenError(
-        'Fullscreen could not be started. Try again or use another browser.',
-      )
-    }
-  }, [webcam.containerRef])
 
   return (
     <section className={rootClassName}>
@@ -193,23 +74,10 @@ export function WebcamView({
         className={[
           'webcam-view__stage',
           mirrored ? 'webcam-view__stage--mirrored' : '',
-          isFullscreen ? 'webcam-view__stage--fullscreen' : '',
         ]
           .filter(Boolean)
           .join(' ')}
       >
-        {fullscreenAvailable ? (
-          <button
-            type="button"
-            className="webcam-view__stage-control"
-            onClick={() => void handleToggleFullscreen()}
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          >
-            {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          </button>
-        ) : null}
-
         <video
           ref={webcam.videoRef}
           className="webcam-view__video"
@@ -238,16 +106,6 @@ export function WebcamView({
 
         {showControls ? (
           <div className="webcam-view__actions">
-            {fullscreenAvailable ? (
-              <button
-                type="button"
-                className="webcam-view__button webcam-view__button--secondary"
-                onClick={() => void handleToggleFullscreen()}
-              >
-                {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-              </button>
-            ) : null}
-
             {webcam.status === 'ready' ? (
               <button
                 type="button"
@@ -282,12 +140,6 @@ export function WebcamView({
           </div>
         ) : null}
       </footer>
-
-      {fullscreenError ? (
-        <p className="webcam-view__fullscreen-note" role="status">
-          {fullscreenError}
-        </p>
-      ) : null}
     </section>
   )
 }

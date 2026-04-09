@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type ReactNode,
-} from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { buildPostureFeedback } from '@/features/analysis/feedback'
 import { createFrameMetrics } from '@/features/analysis/frameMetrics'
@@ -42,8 +35,6 @@ type ThemeMode = 'studio' | 'night'
 
 const THEME_STORAGE_KEY = 'cult-copilot-theme'
 const VOICE_STORAGE_KEY = 'cult-copilot-voice-id'
-const MIN_TARGET_REPS = 1
-const MAX_TARGET_REPS = 30
 
 const CATEGORY_COPY: Record<
   ExerciseCategory,
@@ -61,13 +52,9 @@ const CATEGORY_COPY: Record<
   },
 }
 
-function getFlowSteps(
-  selectedExercise: ExerciseConfig | null,
-  targetReps: number | null,
-) {
+function getFlowSteps(selectedExercise: ExerciseConfig | null) {
   const base: Array<{ key: FlowStep; label: string }> = [
     { key: 'intro', label: 'Intro' },
-    { key: 'calibration', label: 'Calibration' },
     { key: 'exercise', label: 'Workout' },
     { key: 'camera-setup', label: 'Camera' },
   ]
@@ -79,10 +66,8 @@ function getFlowSteps(
   if (selectedExercise.analysisProfile === 'squat') {
     return [
       ...base,
-      {
-        key: 'assessment',
-        label: targetReps ? `${targetReps} Rep Test` : 'Rep Test',
-      },
+      { key: 'calibration', label: 'Calibration' },
+      { key: 'assessment', label: '3 Rep Test' },
       { key: 'results', label: 'Results' },
     ]
   }
@@ -93,13 +78,11 @@ function getFlowSteps(
 function Stepper({
   currentStep,
   selectedExercise,
-  targetReps,
 }: {
   currentStep: FlowStep
   selectedExercise: ExerciseConfig | null
-  targetReps: number | null
 }) {
-  const steps = getFlowSteps(selectedExercise, targetReps)
+  const steps = getFlowSteps(selectedExercise)
   const currentIndex = steps.findIndex((step) => step.key === currentStep)
 
   return (
@@ -128,14 +111,6 @@ function Stepper({
   )
 }
 
-function clampTargetReps(value: number) {
-  if (!Number.isFinite(value)) {
-    return null
-  }
-
-  return Math.min(MAX_TARGET_REPS, Math.max(MIN_TARGET_REPS, Math.round(value)))
-}
-
 function InfoCard({
   actions,
   description,
@@ -156,54 +131,6 @@ function InfoCard({
       <p className="form-flow__copy">{description}</p>
       {actions ? <div className="form-flow__actions">{actions}</div> : null}
     </article>
-  )
-}
-
-function getCalibrationProgressLabel(status: string) {
-  switch (status) {
-    case 'captured':
-      return 'Calibration locked'
-    case 'ready':
-      return 'Almost locked'
-    case 'stabilizing':
-      return 'Hold still'
-    case 'error':
-      return 'Reposition'
-    default:
-      return 'Find full body'
-  }
-}
-
-function CalibrationProgress({
-  progress,
-  status,
-}: {
-  progress: number
-  status: string
-}) {
-  const progressPercent = Math.round(progress * 100)
-
-  return (
-    <div
-      className={[
-        'form-flow__calibration-progress',
-        progress > 0 ? 'form-flow__calibration-progress--active' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      aria-label={`Calibration progress ${progressPercent}%`}
-    >
-      <div className="form-flow__calibration-progress-copy">
-        <span>{getCalibrationProgressLabel(status)}</span>
-        <strong>{progressPercent}%</strong>
-      </div>
-      <div
-        className="form-flow__calibration-progress-track"
-        aria-hidden="true"
-      >
-        <span style={{ width: `${progressPercent}%` }} />
-      </div>
-    </div>
   )
 }
 
@@ -340,7 +267,6 @@ export function FormCheckFlow() {
     useState<ExerciseCategory | null>(null)
   const [selectedExerciseId, setSelectedExerciseId] =
     useState<ExerciseId | null>(null)
-  const [targetReps, setTargetReps] = useState<number | null>(null)
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode)
   const debugMode = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -399,13 +325,10 @@ export function FormCheckFlow() {
     debug: debugMode,
   })
   const calibration = useCalibration({
-    enabled: step === 'calibration',
     landmarks: pose.result?.primaryLandmarks,
     averageVisibility:
       pose.result?.primaryPoseVisibility?.averageVisibility ?? null,
-    timestampMs: pose.result?.timestampMs ?? null,
   })
-  const calibrationBaseline = calibration.baseline
 
   const frameMetrics = useMemo(() => {
     if (!pose.result?.primaryLandmarks) {
@@ -415,9 +338,9 @@ export function FormCheckFlow() {
     return createFrameMetrics({
       landmarks: pose.result.primaryLandmarks,
       timestampMs: pose.result.timestampMs,
-      baseline: calibrationBaseline,
+      baseline: calibration.baseline,
     })
-  }, [calibrationBaseline, pose.result])
+  }, [calibration.baseline, pose.result])
 
   const repDetection = useRepDetection({
     frameMetrics,
@@ -450,7 +373,7 @@ export function FormCheckFlow() {
     phase: repDetection.phase,
     postureFeedback,
     timestampMs: frameMetrics?.timestampMs ?? null,
-    targetReps: targetReps ?? 1,
+    targetReps: 3,
   })
   const lastAnnouncedRepRef = useRef(0)
 
@@ -558,30 +481,27 @@ export function FormCheckFlow() {
   const canContinueFromCamera =
     webcam.status === 'ready' &&
     pose.status === 'running' &&
-    pose.personStatus === 'detected' &&
-    targetReps !== null
+    pose.personStatus === 'detected'
 
   const trackingWarning = useMemo(() => {
     if (pose.personStatus !== 'detected') {
       return 'Keep your full body in frame so tracking stays stable.'
     }
 
-    if (step === 'calibration') {
-      return calibration.message
-    }
-
     if (!selectedExercise) {
-      return calibrationBaseline
-        ? 'Body calibration is ready. Choose a workout to continue.'
-        : calibration.message
+      return 'Choose a workout to start guided tracking.'
     }
 
     if (isSquatProfile) {
+      if (step === 'calibration') {
+        return calibration.message
+      }
+
       if (step === 'assessment' && postureFeedback.activeWarning) {
         return `${postureFeedback.activeWarning.title}: ${postureFeedback.activeWarning.recommendation}`
       }
 
-      return `Move with control. The session completes after ${targetReps ?? 'your chosen'} valid reps.`
+      return 'Move with control. The session completes after 3 valid reps.'
     }
 
     if (postureFeedback.activeWarning) {
@@ -593,24 +513,18 @@ export function FormCheckFlow() {
       .join(' and ')
       .toLowerCase()}.`
   }, [
-    calibrationBaseline,
     calibration.message,
     isSquatProfile,
     pose.personStatus,
     postureFeedback.activeWarning,
     selectedExercise,
     step,
-    targetReps,
   ])
 
   const metricItems = [
     {
       label: 'Workout',
       value: selectedExercise?.shortLabel ?? 'Not selected',
-    },
-    {
-      label: 'Target reps',
-      value: targetReps !== null ? String(targetReps) : 'Choose reps',
     },
     {
       label: 'Mode',
@@ -650,30 +564,27 @@ export function FormCheckFlow() {
     },
   ]
 
-  const resetAssessmentState = () => {
+  const resetTrackingState = () => {
+    calibration.resetBaseline()
     assessment.resetSession()
   }
 
   const restartFlow = () => {
-    calibration.resetBaseline()
-    resetAssessmentState()
+    resetTrackingState()
     setSelectedCategory(null)
     setSelectedExerciseId(null)
-    setTargetReps(null)
     setStep('intro')
   }
 
   const handleSelectExercise = (exerciseId: ExerciseId) => {
-    resetAssessmentState()
+    resetTrackingState()
     setSelectedExerciseId(exerciseId)
-    setTargetReps(null)
-    setStep('exercise')
+    setStep('camera-setup')
   }
 
   const handleChangeExercise = () => {
-    resetAssessmentState()
+    resetTrackingState()
     setSelectedExerciseId(null)
-    setTargetReps(null)
     setStep('exercise')
   }
 
@@ -693,17 +604,6 @@ export function FormCheckFlow() {
       minGapMs: 0,
       repeatGapMs: 0,
     })
-  }
-
-  const handleTargetRepsChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value.trim()
-
-    if (nextValue === '') {
-      setTargetReps(null)
-      return
-    }
-
-    setTargetReps(clampTargetReps(Number.parseInt(nextValue, 10)))
   }
 
   return (
@@ -744,11 +644,11 @@ export function FormCheckFlow() {
         <p className="eyebrow">Cult Copilot</p>
         <h1>One camera flow for multiple workouts.</h1>
         <p className="hero-copy">
-          Start by calibrating the full body once, then unlock the workout
-          picker, set your target reps, and continue into lower-body or
-          upper-body tracking. Squat-family exercises still run rep-counted
-          scoring and results, while the rest use profile-based live coaching
-          with pose overlay and camera-quality guidance.
+          The stronger Cult Copilot tracking pipeline now sits behind the richer
+          multi-workout UI from your posture-corrector concept. Squat-family
+          exercises run full calibration, rep detection, posture scoring, and
+          results. The rest now use profile-based live coaching with exercise
+          family warnings, pose overlay, and camera-quality guidance.
         </p>
 
         <div className="status-row">
@@ -782,11 +682,7 @@ export function FormCheckFlow() {
           </span>
         </div>
 
-        <Stepper
-          currentStep={step}
-          selectedExercise={selectedExercise}
-          targetReps={targetReps}
-        />
+        <Stepper currentStep={step} selectedExercise={selectedExercise} />
       </section>
 
       <section className="content-grid">
@@ -799,7 +695,7 @@ export function FormCheckFlow() {
           <p className="form-flow__copy">
             {selectedExercise
               ? selectedExercise.description
-              : 'Calibrate your body first, then choose a workout and move fully into frame so the pose detector can lock onto shoulders, hips, knees, and ankles.'}
+              : 'Choose a workout first, then move into frame so the pose detector can lock onto shoulders, hips, knees, and ankles.'}
           </p>
 
           <div
@@ -875,7 +771,7 @@ export function FormCheckFlow() {
               <span className="status-pill status-pill--muted">
                 {isSquatProfile
                   ? `Reps ${assessment.completedReps}/${assessment.targetReps}`
-                  : `Target ${targetReps} reps`}
+                  : selectedExercise?.shortLabel ?? 'Choose workout'}
               </span>
               <span className="status-pill status-pill--muted">
                 Visibility {formatPercent(frameMetrics?.averageVisibility)}
@@ -905,57 +801,6 @@ export function FormCheckFlow() {
                 )}
               </div>
             ) : null}
-
-            {step === 'calibration' ? (
-              <div className="form-flow__stage-panel">
-                <div className="form-flow__stage-panel-header">
-                  <span className="form-flow__stage-panel-label">
-                    Calibration
-                  </span>
-                  <strong className="form-flow__stage-panel-title">
-                    {calibration.baseline
-                      ? 'Body calibration saved'
-                      : 'Capture body baseline'}
-                  </strong>
-                </div>
-
-                <p className="form-flow__stage-panel-copy">
-                  {calibration.baseline
-                    ? 'Calibration is complete. You can exit fullscreen and continue to workout selection.'
-                    : calibration.message}
-                </p>
-
-                {!calibration.baseline ? (
-                  <CalibrationProgress
-                    progress={calibration.progress}
-                    status={calibration.status}
-                  />
-                ) : null}
-
-                <div className="form-flow__stage-panel-actions">
-                  {calibration.baseline ? (
-                    <button
-                      type="button"
-                      className="form-flow__button form-flow__button--secondary form-flow__button--compact"
-                      onClick={calibration.resetBaseline}
-                    >
-                      Reset baseline
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="form-flow__button form-flow__button--compact"
-                      onClick={() => {
-                        calibration.captureBaseline()
-                      }}
-                      disabled={!calibration.canCapture}
-                    >
-                      Capture now
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : null}
           </WebcamView>
 
           <div className="metric-grid form-flow__metrics">
@@ -973,26 +818,16 @@ export function FormCheckFlow() {
             <>
               <InfoCard
                 label="Intro"
-                title="Calibrate first, then unlock workouts"
-                description="This flow now starts with a global body calibration. Once the baseline is captured, the workout picker unlocks, you can choose upper body or lower body, and then set the target reps before starting live tracking."
+                title="Start with the workout, not the camera"
+                description="This version keeps the stable browser pose tracking from Cult Copilot, then wraps it in the broader workout selection UX from your other project so the demo feels like a real product instead of a single squat-only screen."
                 actions={
-                  <>
-                    <button
-                      type="button"
-                      className="form-flow__button"
-                      onClick={() => setStep('calibration')}
-                    >
-                      Calibrate body
-                    </button>
-                    <button
-                      type="button"
-                      className="form-flow__button form-flow__button--secondary"
-                      onClick={() => setStep('exercise')}
-                      disabled={!calibration.baseline}
-                    >
-                      Choose workout
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    className="form-flow__button"
+                    onClick={() => setStep('exercise')}
+                  >
+                    Choose workout
+                  </button>
                 }
               />
 
@@ -1003,9 +838,9 @@ export function FormCheckFlow() {
                 </div>
 
                 <ul className="feedback-list">
-                  <li>Body calibration now happens before workout selection.</li>
-                  <li>Workout selection stays locked until calibration is captured.</li>
-                  <li>Each workout now carries a configurable target reps value.</li>
+                  <li>Squat-family movements run calibration, rep counting, and results.</li>
+                  <li>Other workouts now use profile-based live error tracing by movement family.</li>
+                  <li>Only squat-family movements currently have full rep-scored results.</li>
                 </ul>
               </article>
             </>
@@ -1020,10 +855,10 @@ export function FormCheckFlow() {
                 </div>
 
                 <p className="form-flow__copy">
-                  Calibration is complete. Pick the body area first, then select
-                  a movement. Squat-family exercises still unlock the full
-                  scoring pipeline. Other workouts use family-specific live
-                  coaching, overlay, and camera-readiness feedback.
+                  Pick the body area first, then select a movement. Squat-family
+                  exercises unlock the full scoring pipeline. Other workouts
+                  now get family-specific live coaching, overlay, and
+                  camera-readiness feedback.
                 </p>
 
                 {!selectedCategory ? (
@@ -1033,11 +868,7 @@ export function FormCheckFlow() {
                         <CategoryCard
                           key={category}
                           category={category}
-                          onClick={() => {
-                            setSelectedCategory(category)
-                            setSelectedExerciseId(null)
-                            setTargetReps(null)
-                          }}
+                          onClick={() => setSelectedCategory(category)}
                         />
                       ),
                     )}
@@ -1055,11 +886,7 @@ export function FormCheckFlow() {
                       <button
                         type="button"
                         className="form-flow__button form-flow__button--secondary"
-                        onClick={() => {
-                          setSelectedCategory(null)
-                          setSelectedExerciseId(null)
-                          setTargetReps(null)
-                        }}
+                        onClick={() => setSelectedCategory(null)}
                       >
                         Change body area
                       </button>
@@ -1105,27 +932,6 @@ export function FormCheckFlow() {
 
                 {selectedExercise ? (
                   <>
-                    <label className="form-flow__field">
-                      <span className="form-flow__field-label">Target reps</span>
-                      <input
-                        type="number"
-                        min={MIN_TARGET_REPS}
-                        max={MAX_TARGET_REPS}
-                        step={1}
-                        inputMode="numeric"
-                        className="form-flow__input"
-                        value={targetReps ?? ''}
-                        onChange={handleTargetRepsChange}
-                        placeholder="Enter reps"
-                      />
-                    </label>
-                    <p className="form-flow__field-hint">
-                      Choose the reps for this workout before continuing.
-                      {targetReps !== null
-                        ? ` Squat-profile exercises will complete and score the set after ${targetReps} valid reps.`
-                        : ' The next step stays locked until reps are entered.'}
-                    </p>
-
                     <ul className="exercise-focus-list">
                       {selectedExercise.focus.map((item) => (
                         <li key={item}>{item}</li>
@@ -1141,22 +947,11 @@ export function FormCheckFlow() {
                         <dt>Tracking mode</dt>
                         <dd>
                           {isSquatProfile
-                            ? 'Rep-counted scoring, posture score, and results'
+                            ? 'Calibration, rep counting, posture score, and results'
                             : 'Live pose overlay and profile-based coaching'}
                         </dd>
                       </div>
                     </dl>
-
-                    <div className="form-flow__actions">
-                      <button
-                        type="button"
-                        className="form-flow__button"
-                        onClick={() => setStep('camera-setup')}
-                        disabled={targetReps === null}
-                      >
-                        Continue to camera setup
-                      </button>
-                    </div>
                   </>
                 ) : null}
               </article>
@@ -1170,7 +965,7 @@ export function FormCheckFlow() {
                 title="Get the athlete fully into frame"
                 description={
                   selectedExercise
-                    ? `Set up the camera for ${selectedExercise.shortLabel}. The target is ${targetReps ?? 'not chosen'} reps. Continue once the camera is live, the person is tracked, and the rep target is set.`
+                    ? `Set up the camera for ${selectedExercise.shortLabel}. Continue once the camera is live and the person is tracked.`
                     : 'Pick a workout first, then continue once the camera is live and a person is tracked.'
                 }
                 actions={
@@ -1185,13 +980,13 @@ export function FormCheckFlow() {
                     <button
                       type="button"
                       className="form-flow__button"
-                      onClick={() => setStep('assessment')}
+                      onClick={() =>
+                        setStep(isSquatProfile ? 'calibration' : 'assessment')
+                      }
                       disabled={!selectedExercise || !canContinueFromCamera}
                     >
                       {isSquatProfile
-                        ? targetReps !== null
-                          ? `Start ${targetReps}-rep test`
-                          : 'Choose reps first'
+                        ? 'Continue to calibration'
                         : 'Start live tracking'}
                     </button>
                   </>
@@ -1213,20 +1008,18 @@ export function FormCheckFlow() {
             </>
           ) : null}
 
-          {step === 'calibration' ? (
+          {step === 'calibration' && selectedExercise ? (
             <>
               <InfoCard
                 label="Calibration"
-                title="Capture a standing body baseline"
+                title={`Capture a standing baseline for ${selectedExercise.shortLabel}`}
                 description={calibration.message}
                 actions={
                   <>
                     <button
                       type="button"
                       className="form-flow__button form-flow__button--secondary"
-                      onClick={() =>
-                        setStep(selectedExercise ? 'camera-setup' : 'intro')
-                      }
+                      onClick={() => setStep('camera-setup')}
                     >
                       Back
                     </button>
@@ -1241,22 +1034,20 @@ export function FormCheckFlow() {
                       <button
                         type="button"
                         className="form-flow__button"
-                      onClick={() => {
+                        onClick={() => {
                           calibration.captureBaseline()
                         }}
                         disabled={!calibration.canCapture}
                       >
-                        Capture now
+                        Capture baseline
                       </button>
                     ) : (
                       <button
                         type="button"
                         className="form-flow__button"
-                        onClick={() =>
-                          setStep(selectedExercise ? 'camera-setup' : 'exercise')
-                        }
+                        onClick={() => setStep('assessment')}
                       >
-                        {selectedExercise ? 'Back to workout' : 'Choose workout'}
+                        Start 3-rep test
                       </button>
                     )}
                   </>
@@ -1269,18 +1060,10 @@ export function FormCheckFlow() {
                   <h2>Why calibration matters here</h2>
                 </div>
 
-                {!calibration.baseline ? (
-                  <CalibrationProgress
-                    progress={calibration.progress}
-                    status={calibration.status}
-                  />
-                ) : null}
-
                 <p className="panel-copy">
-                  This standing capture creates a stable body baseline before
-                  workout selection. The same calibration is later reused by
-                  squat-profile movements for depth checks and keeps the overall
-                  flow consistent across all workouts.
+                  The squat pipeline uses your standing pose as a personal depth
+                  reference. That makes hip-depth checks much more stable across
+                  athletes and camera positions.
                 </p>
               </article>
             </>
@@ -1302,7 +1085,7 @@ export function FormCheckFlow() {
                       ? 'Tracking was lost. Re-enter frame before continuing reps.'
                       : postureFeedback.activeWarning
                         ? `${postureFeedback.activeWarning.title}: ${postureFeedback.activeWarning.recommendation}`
-                        : `Move at a steady pace. The session completes after ${targetReps} valid reps.`
+                        : 'Move at a steady pace. The session completes after 3 valid reps.'
                     : trackingWarning}
                 </p>
 
@@ -1359,10 +1142,6 @@ export function FormCheckFlow() {
                 </div>
 
                 <div className="stack-list">
-                  <div className="stack-item">
-                    <h3>Target reps</h3>
-                    <p>{targetReps}</p>
-                  </div>
                   <div className="stack-item">
                     <h3>Current step</h3>
                     <p>{step}</p>
