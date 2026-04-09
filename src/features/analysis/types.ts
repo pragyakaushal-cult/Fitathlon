@@ -13,6 +13,10 @@ export interface LandmarkLike extends Point2D {
 export interface NamedSquatLandmarks {
   leftShoulder: LandmarkLike | null
   rightShoulder: LandmarkLike | null
+  leftElbow: LandmarkLike | null
+  rightElbow: LandmarkLike | null
+  leftWrist: LandmarkLike | null
+  rightWrist: LandmarkLike | null
   leftHip: LandmarkLike | null
   rightHip: LandmarkLike | null
   leftKnee: LandmarkLike | null
@@ -35,7 +39,14 @@ export interface FrameMetrics {
   leftKneeAngleDeg: number | null
   rightKneeAngleDeg: number | null
   averageKneeAngleDeg: number | null
+  minKneeAngleDeg: number | null
+  leftElbowAngleDeg: number | null
+  rightElbowAngleDeg: number | null
+  averageElbowAngleDeg: number | null
+  elbowSymmetryScore: number | null
   torsoLeanDeg: number | null
+  bodyLineAngleDeg: number | null
+  bodyLineOffsetNormalized: number | null
   hipDepthPx: number | null
   hipDepthNormalized: number | null
   symmetryScore: number | null

@@ -68,6 +68,10 @@ export function createFrameMetrics({
   const rightShoulder = toPoint2D(mappedLandmarks.rightShoulder)
   const leftHip = toPoint2D(mappedLandmarks.leftHip)
   const rightHip = toPoint2D(mappedLandmarks.rightHip)
+  const leftElbow = toPoint2D(mappedLandmarks.leftElbow)
+  const rightElbow = toPoint2D(mappedLandmarks.rightElbow)
+  const leftWrist = toPoint2D(mappedLandmarks.leftWrist)
+  const rightWrist = toPoint2D(mappedLandmarks.rightWrist)
   const leftKnee = toPoint2D(mappedLandmarks.leftKnee)
   const rightKnee = toPoint2D(mappedLandmarks.rightKnee)
   const leftAnkle = toPoint2D(mappedLandmarks.leftAnkle)
@@ -83,11 +87,47 @@ export function createFrameMetrics({
     rightKnee,
     rightAnkle,
   )
+  const leftElbowAngleDeg = angleBetweenThreePoints(
+    leftShoulder,
+    leftElbow,
+    leftWrist,
+  )
+  const rightElbowAngleDeg = angleBetweenThreePoints(
+    rightShoulder,
+    rightElbow,
+    rightWrist,
+  )
   const averageKneeAngleDeg =
     leftKneeAngleDeg !== null && rightKneeAngleDeg !== null
       ? (leftKneeAngleDeg + rightKneeAngleDeg) / 2
       : leftKneeAngleDeg ?? rightKneeAngleDeg
+  const validKneeAngles = [leftKneeAngleDeg, rightKneeAngleDeg].filter(
+    (angle): angle is number => angle !== null && Number.isFinite(angle),
+  )
+  const minKneeAngleDeg =
+    validKneeAngles.length > 0 ? Math.min(...validKneeAngles) : null
+  const averageElbowAngleDeg =
+    leftElbowAngleDeg !== null && rightElbowAngleDeg !== null
+      ? (leftElbowAngleDeg + rightElbowAngleDeg) / 2
+      : leftElbowAngleDeg ?? rightElbowAngleDeg
   const torsoLeanDeg = torsoLeanRelativeToVertical(hipCenter, shoulderCenter)
+  const bodyLineAngleDeg = angleBetweenThreePoints(
+    shoulderCenter,
+    hipCenter,
+    ankleCenter,
+  )
+  const shoulderToAnkleDistance = distanceBetweenPoints(
+    shoulderCenter,
+    ankleCenter,
+  )
+  const shoulderAnkleMidpoint = midpoint(shoulderCenter, ankleCenter)
+  const bodyLineOffsetNormalized =
+    hipCenter !== null &&
+    shoulderAnkleMidpoint !== null &&
+    shoulderToAnkleDistance !== null &&
+    shoulderToAnkleDistance > 0
+      ? (hipCenter.y - shoulderAnkleMidpoint.y) / shoulderToAnkleDistance
+      : null
 
   const hipDepth = baseline
     ? hipDepthRelativeToBaseline(
@@ -103,6 +143,10 @@ export function createFrameMetrics({
     averageVisibility: averageVisibility([
       mappedLandmarks.leftShoulder,
       mappedLandmarks.rightShoulder,
+      mappedLandmarks.leftElbow,
+      mappedLandmarks.rightElbow,
+      mappedLandmarks.leftWrist,
+      mappedLandmarks.rightWrist,
       mappedLandmarks.leftHip,
       mappedLandmarks.rightHip,
       mappedLandmarks.leftKnee,
@@ -113,7 +157,18 @@ export function createFrameMetrics({
     leftKneeAngleDeg,
     rightKneeAngleDeg,
     averageKneeAngleDeg,
+    minKneeAngleDeg,
+    leftElbowAngleDeg,
+    rightElbowAngleDeg,
+    averageElbowAngleDeg,
+    elbowSymmetryScore: leftRightSymmetryScore(
+      leftElbowAngleDeg,
+      rightElbowAngleDeg,
+      18,
+    ),
     torsoLeanDeg,
+    bodyLineAngleDeg,
+    bodyLineOffsetNormalized,
     hipDepthPx: hipDepth.depthPx,
     hipDepthNormalized: hipDepth.depthNormalized,
     symmetryScore: leftRightSymmetryScore(leftKneeAngleDeg, rightKneeAngleDeg),

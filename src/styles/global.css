@@ -1,30 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
 :root {
-  color: #e2e8f0;
-  background:
-    radial-gradient(circle at top, rgba(14, 165, 233, 0.18), transparent 32%),
-    linear-gradient(180deg, #020617 0%, #0f172a 46%, #111827 100%);
-  font-family:
-    'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --app-background:
+    radial-gradient(circle at 15% 15%, rgba(214, 167, 109, 0.16), transparent 24%),
+    radial-gradient(circle at 78% 18%, rgba(104, 213, 191, 0.12), transparent 20%),
+    linear-gradient(180deg, #050608 0%, #0a0d12 44%, #141921 100%);
+  --ambient-overlay:
+    linear-gradient(135deg, rgba(214, 167, 109, 0.08), transparent 24%, rgba(104, 213, 191, 0.05) 100%);
+  --ambient-noise-opacity: 0.24;
+  --bg-panel: linear-gradient(180deg, rgba(19, 23, 30, 0.94), rgba(10, 13, 18, 0.82));
+  --bg-panel-alt: rgba(13, 16, 22, 0.76);
+  --bg-soft: rgba(247, 243, 237, 0.05);
+  --hero-bg:
+    radial-gradient(circle at 82% 22%, rgba(104, 213, 191, 0.12), transparent 18%),
+    radial-gradient(circle at 18% 10%, rgba(214, 167, 109, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(26, 31, 39, 0.88), rgba(9, 11, 15, 0.9));
+  --panel-glow: radial-gradient(circle, rgba(214, 167, 109, 0.18) 0%, transparent 72%);
+  --panel-gloss:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 24%, transparent 70%, rgba(255, 255, 255, 0.03) 100%);
+  --surface-raised:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    rgba(10, 13, 18, 0.72);
+  --surface-raised-strong:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
+    rgba(12, 15, 20, 0.78);
+  --surface-raised-hover:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    rgba(18, 22, 28, 0.86);
+  --surface-overlay:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+    rgba(10, 13, 18, 0.9);
+  --surface-muted:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+    rgba(12, 15, 20, 0.66);
+  --surface-secondary:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.008)),
+    rgba(10, 13, 18, 0.68);
+  --surface-callout:
+    linear-gradient(120deg, rgba(214, 167, 109, 0.12), rgba(255, 255, 255, 0.02)),
+    rgba(18, 21, 27, 0.74);
+  --surface-callout-error:
+    linear-gradient(120deg, rgba(240, 142, 142, 0.12), rgba(255, 255, 255, 0.015)),
+    rgba(37, 19, 23, 0.76);
+  --surface-warning:
+    linear-gradient(135deg, rgba(214, 167, 109, 0.13), rgba(255, 255, 255, 0.02)),
+    rgba(15, 18, 23, 0.92);
+  --surface-result-good:
+    linear-gradient(180deg, rgba(104, 213, 191, 0.08), rgba(255, 255, 255, 0.012)),
+    rgba(8, 17, 17, 0.72);
+  --surface-result-warn:
+    linear-gradient(180deg, rgba(214, 167, 109, 0.09), rgba(255, 255, 255, 0.012)),
+    rgba(21, 15, 10, 0.72);
+  --border: rgba(241, 228, 211, 0.12);
+  --border-soft: rgba(255, 245, 232, 0.08);
+  --border-strong: rgba(214, 167, 109, 0.24);
+  --text-primary: #f7f3ed;
+  --heading: #f8fafc;
+  --text-muted: rgba(241, 233, 222, 0.68);
+  --text-soft: rgba(250, 246, 240, 0.86);
+  --accent: #d6a76d;
+  --accent-strong: #f0c995;
+  --accent-soft: rgba(214, 167, 109, 0.16);
+  --cool-accent: #68d5bf;
+  --cool-soft: rgba(104, 213, 191, 0.14);
+  --ok: #85d6b0;
+  --ok-soft: rgba(104, 213, 191, 0.12);
+  --warn: #f2bb73;
+  --warn-soft: rgba(214, 167, 109, 0.12);
+  --error: #f08e8e;
+  --error-soft: rgba(130, 52, 52, 0.24);
+  --shadow: 0 34px 120px rgba(0, 0, 0, 0.44);
+  --shadow-soft: 0 20px 48px rgba(0, 0, 0, 0.24);
+  --button-primary-bg:
+    linear-gradient(135deg, rgba(214, 167, 109, 0.96), rgba(240, 201, 149, 0.92));
+  --button-primary-text: #120e09;
+  --button-primary-shadow: 0 14px 28px rgba(126, 90, 44, 0.26);
+  --button-primary-shadow-hover: 0 18px 34px rgba(126, 90, 44, 0.32);
+  --button-secondary-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)),
+    rgba(10, 13, 18, 0.82);
+  --button-secondary-border: rgba(255, 245, 232, 0.1);
+  --button-secondary-text: #f5eee5;
+  --interactive-sheen:
+    linear-gradient(118deg, transparent 18%, rgba(255, 255, 255, 0.18) 35%, rgba(255, 255, 255, 0.08) 42%, transparent 58%);
+  --interactive-focus-ring:
+    0 0 0 1px color-mix(in srgb, var(--cool-accent) 36%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--cool-accent) 16%, transparent);
+  --stage-bg:
+    radial-gradient(circle at 20% 18%, rgba(214, 167, 109, 0.14), transparent 24%),
+    radial-gradient(circle at 84% 24%, rgba(104, 213, 191, 0.12), transparent 26%),
+    rgba(4, 6, 9, 0.96);
+  --stage-overlay:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.36)),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 26%);
+  --stage-scrim: linear-gradient(180deg, rgba(2, 6, 23, 0.12), rgba(2, 6, 23, 0.8));
+  --video-backdrop: #020617;
+  --warning-text: #fff1df;
+  --callout-text: #fff5e6;
+  --noise:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px),
+    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px),
+    radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px);
+  color-scheme: dark;
+  font-family: 'Manrope', sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  background: var(--app-background);
+  color: var(--text-primary);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root[data-theme='night'] {
+  --app-background:
+    radial-gradient(circle at 14% 18%, rgba(105, 142, 255, 0.16), transparent 26%),
+    radial-gradient(circle at 84% 12%, rgba(88, 224, 255, 0.14), transparent 22%),
+    linear-gradient(180deg, #03050a 0%, #07101a 46%, #0e1723 100%);
+  --ambient-overlay:
+    linear-gradient(130deg, rgba(105, 142, 255, 0.12), transparent 24%, rgba(88, 224, 255, 0.08) 100%);
+  --ambient-noise-opacity: 0.2;
+  --bg-panel: linear-gradient(180deg, rgba(11, 18, 31, 0.94), rgba(5, 9, 16, 0.84));
+  --bg-panel-alt: rgba(7, 12, 20, 0.8);
+  --bg-soft: rgba(240, 247, 255, 0.06);
+  --hero-bg:
+    radial-gradient(circle at 80% 20%, rgba(88, 224, 255, 0.14), transparent 20%),
+    radial-gradient(circle at 16% 12%, rgba(105, 142, 255, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(10, 17, 30, 0.92), rgba(3, 7, 14, 0.94));
+  --panel-glow: radial-gradient(circle, rgba(88, 224, 255, 0.18) 0%, transparent 72%);
+  --panel-gloss:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.065), transparent 24%, transparent 70%, rgba(180, 228, 255, 0.04) 100%);
+  --surface-raised:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+    rgba(6, 10, 18, 0.74);
+  --surface-raised-strong:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(8, 13, 21, 0.8);
+  --surface-raised-hover:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(10, 17, 28, 0.88);
+  --surface-overlay:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.014)),
+    rgba(7, 11, 19, 0.92);
+  --surface-muted:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.038), rgba(255, 255, 255, 0.015)),
+    rgba(8, 12, 20, 0.68);
+  --surface-secondary:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.008)),
+    rgba(6, 10, 18, 0.72);
+  --surface-callout:
+    linear-gradient(120deg, rgba(88, 224, 255, 0.11), rgba(255, 255, 255, 0.02)),
+    rgba(9, 14, 23, 0.78);
+  --surface-callout-error:
+    linear-gradient(120deg, rgba(240, 142, 142, 0.14), rgba(255, 255, 255, 0.015)),
+    rgba(37, 16, 24, 0.78);
+  --surface-warning:
+    linear-gradient(135deg, rgba(88, 224, 255, 0.14), rgba(255, 255, 255, 0.02)),
+    rgba(8, 12, 21, 0.92);
+  --surface-result-good:
+    linear-gradient(180deg, rgba(88, 224, 255, 0.12), rgba(255, 255, 255, 0.012)),
+    rgba(5, 16, 21, 0.74);
+  --surface-result-warn:
+    linear-gradient(180deg, rgba(105, 142, 255, 0.11), rgba(255, 255, 255, 0.012)),
+    rgba(7, 12, 23, 0.76);
+  --border: rgba(185, 220, 255, 0.14);
+  --border-soft: rgba(204, 232, 255, 0.11);
+  --border-strong: rgba(105, 142, 255, 0.28);
+  --text-primary: #eff5ff;
+  --heading: #f4f9ff;
+  --text-muted: rgba(215, 228, 244, 0.68);
+  --text-soft: rgba(238, 245, 255, 0.88);
+  --accent: #7eaaff;
+  --accent-strong: #d8eaff;
+  --accent-soft: rgba(126, 170, 255, 0.16);
+  --cool-accent: #58e0ff;
+  --cool-soft: rgba(88, 224, 255, 0.14);
+  --ok: #79e7d3;
+  --ok-soft: rgba(88, 224, 255, 0.14);
+  --warn: #f2c58a;
+  --error: #f29f9f;
+  --error-soft: rgba(123, 42, 56, 0.28);
+  --shadow: 0 38px 130px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 22px 52px rgba(0, 0, 0, 0.28);
+  --button-primary-bg:
+    linear-gradient(135deg, rgba(113, 156, 255, 0.96), rgba(88, 224, 255, 0.9));
+  --button-primary-text: #03101d;
+  --button-primary-shadow: 0 16px 30px rgba(35, 73, 142, 0.32);
+  --button-primary-shadow-hover: 0 20px 38px rgba(35, 73, 142, 0.38);
+  --button-secondary-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    rgba(7, 12, 21, 0.86);
+  --button-secondary-border: rgba(204, 232, 255, 0.11);
+  --button-secondary-text: #eef6ff;
+  --interactive-sheen:
+    linear-gradient(118deg, transparent 18%, rgba(216, 234, 255, 0.2) 35%, rgba(88, 224, 255, 0.1) 44%, transparent 60%);
+  --interactive-focus-ring:
+    0 0 0 1px color-mix(in srgb, var(--cool-accent) 40%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--cool-accent) 18%, transparent);
+  --stage-bg:
+    radial-gradient(circle at 20% 18%, rgba(105, 142, 255, 0.14), transparent 24%),
+    radial-gradient(circle at 84% 24%, rgba(88, 224, 255, 0.14), transparent 28%),
+    rgba(2, 5, 10, 0.97);
+  --stage-overlay:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.38)),
+    radial-gradient(circle at top right, rgba(186, 234, 255, 0.1), transparent 28%);
+  --stage-scrim: linear-gradient(180deg, rgba(2, 7, 16, 0.16), rgba(2, 7, 16, 0.82));
+  --video-backdrop: #01050b;
+  --warning-text: #ebf9ff;
+  --callout-text: #ecfbff;
+  --warn-soft: rgba(242, 197, 138, 0.12);
+}
+
 * {
   box-sizing: border-box;
 }
 
-html {
+html,
+body,
+#root {
   min-height: 100%;
+}
+
+html {
+  background: var(--app-background);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background: var(--app-background);
+  color: var(--text-primary);
+  transition:
+    background 520ms ease,
+    color 320ms ease;
 }
 
 body::before {
@@ -32,13 +242,26 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(56, 189, 248, 0.06),
-      transparent 30%,
-      rgba(249, 115, 22, 0.06) 100%
-    );
+  background: var(--ambient-overlay);
+  opacity: 0.92;
+  transform-origin: center;
+  animation: ambient-drift 18s ease-in-out infinite alternate;
+  transition:
+    background 520ms ease,
+    opacity 520ms ease;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--noise);
+  background-size: 180px 180px, 220px 220px, 260px 260px;
+  mix-blend-mode: soft-light;
+  opacity: var(--ambient-noise-opacity);
+  animation: grain-drift 22s linear infinite;
+  transition: opacity 520ms ease;
 }
 
 button,
@@ -59,6 +282,54 @@ a {
   color: inherit;
 }
 
-#root {
-  min-height: 100vh;
+button {
+  cursor: pointer;
+}
+
+code {
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+}
+
+::selection {
+  background: rgba(214, 167, 109, 0.28);
+  color: #fff8ef;
+}
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-1.2%, 0.8%, 0) scale(1.02);
+  }
+
+  to {
+    transform: translate3d(1.5%, -1%, 0) scale(1.04);
+  }
+}
+
+@keyframes grain-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-0.8%, 0.6%, 0);
+  }
+
+  to {
+    transform: translate3d(0.8%, -0.6%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,3 +1,4 @@
+import type { AnalysisProfile } from './profiles'
 import type { SquatPhase } from './repStateMachine'
 import {
   evaluatePostureRules,
@@ -17,6 +18,12 @@ export type PostureWarningKey =
   | 'kneeCollapse'
   | 'insufficientDepth'
   | 'leftRightAsymmetry'
+  | 'insufficientHipHinge'
+  | 'excessiveKneeDrive'
+  | 'insufficientRangeOfMotion'
+  | 'hipDrop'
+  | 'hipPike'
+  | 'shoulderInstability'
 
 export interface PostureWarning {
   key: PostureWarningKey
@@ -39,6 +46,7 @@ export interface PostureFeedback {
 export interface BuildPostureFeedbackOptions {
   metrics: FrameMetrics | null
   landmarks: PoseLandmarksInput | null | undefined
+  profile?: AnalysisProfile | null
   phase?: SquatPhase | null
   ruleConfig?: Partial<PostureRuleConfig>
   scoreWeights?: Partial<PostureScoreWeights>
@@ -73,10 +81,58 @@ const WARNING_LIBRARY: Record<PostureWarningKey, PostureWarning> = {
     recommendation: 'Slow down and keep pressure even through both legs.',
     priority: 4,
   },
+  insufficientHipHinge: {
+    key: 'insufficientHipHinge',
+    title: 'Push hips back',
+    message: 'The movement looks too upright for a hinge pattern.',
+    recommendation: 'Send the hips back more before driving through the rep.',
+    priority: 3,
+  },
+  excessiveKneeDrive: {
+    key: 'excessiveKneeDrive',
+    title: 'Soften the knees',
+    message: 'Your knees are taking over instead of the hinge.',
+    recommendation: 'Keep a soft bend in the knees and load the hips more.',
+    priority: 4,
+  },
+  insufficientRangeOfMotion: {
+    key: 'insufficientRangeOfMotion',
+    title: 'Use more range',
+    message: 'The rep is staying short and not reaching full working range.',
+    recommendation: 'Move deeper into the rep while staying controlled.',
+    priority: 3,
+  },
+  hipDrop: {
+    key: 'hipDrop',
+    title: 'Keep hips up',
+    message: 'Your midline is sagging and losing tension.',
+    recommendation: 'Brace harder and keep the body in one strong line.',
+    priority: 1,
+  },
+  hipPike: {
+    key: 'hipPike',
+    title: 'Lower the hips',
+    message: 'Your hips are drifting too high and breaking the line.',
+    recommendation: 'Bring the hips back into line with shoulders and ankles.',
+    priority: 2,
+  },
+  shoulderInstability: {
+    key: 'shoulderInstability',
+    title: 'Even out the shoulders',
+    message: 'Your left and right arm path are not moving evenly.',
+    recommendation: 'Slow down and keep both shoulders and arms moving together.',
+    priority: 4,
+  },
 }
 
 const WARNING_ORDER: PostureWarningKey[] = [
   'kneeCollapse',
+  'hipDrop',
+  'hipPike',
+  'insufficientHipHinge',
+  'insufficientRangeOfMotion',
+  'shoulderInstability',
+  'excessiveKneeDrive',
   'excessiveTorsoLean',
   'insufficientDepth',
   'leftRightAsymmetry',
@@ -85,6 +141,7 @@ const WARNING_ORDER: PostureWarningKey[] = [
 export function buildPostureFeedback({
   metrics,
   landmarks,
+  profile = 'squat',
   phase,
   ruleConfig,
   scoreWeights,
@@ -92,6 +149,7 @@ export function buildPostureFeedback({
   const ruleEvaluation = evaluatePostureRules({
     metrics,
     landmarks,
+    profile,
     phase,
     config: ruleConfig,
   })

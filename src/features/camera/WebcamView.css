@@ -1,11 +1,11 @@
 .webcam-view {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .webcam-view__header {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .webcam-view__title-row {
@@ -17,59 +17,90 @@
 
 .webcam-view__title {
   margin: 0;
-  color: #f8fafc;
-  font-size: 1.25rem;
+  color: var(--heading);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  line-height: 0.96;
 }
 
 .webcam-view__description,
 .webcam-view__meta {
   margin: 0;
-  color: rgba(226, 232, 240, 0.74);
-  line-height: 1.6;
+  color: var(--text-muted);
+  line-height: 1.72;
 }
 
 .webcam-view__badge {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 8px 14px;
+  font-size: 0.76rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  color: #dbeafe;
-  background: rgba(15, 23, 42, 0.55);
+  letter-spacing: 0.16em;
+  border: 1px solid var(--border-soft);
+  color: var(--text-soft);
+  background: var(--bg-soft);
+  transition:
+    background 520ms ease,
+    border-color 520ms ease,
+    color 280ms ease;
 }
 
 .webcam-view__badge[data-status='ready'] {
-  color: #dcfce7;
-  background: rgba(22, 101, 52, 0.28);
-  border-color: rgba(34, 197, 94, 0.38);
+  color: color-mix(in srgb, var(--cool-accent) 62%, white);
+  background: var(--ok-soft);
+  border-color: color-mix(in srgb, var(--cool-accent) 24%, transparent);
 }
 
 .webcam-view__badge[data-status='requesting'] {
-  color: #fef3c7;
-  background: rgba(146, 64, 14, 0.28);
-  border-color: rgba(251, 191, 36, 0.35);
+  color: color-mix(in srgb, var(--warn) 40%, white);
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 24%, transparent);
 }
 
 .webcam-view__badge[data-status='error'],
 .webcam-view__badge[data-status='unsupported'] {
-  color: #fee2e2;
-  background: rgba(127, 29, 29, 0.3);
-  border-color: rgba(248, 113, 113, 0.36);
+  color: color-mix(in srgb, var(--error) 34%, white);
+  background: var(--error-soft);
+  border-color: color-mix(in srgb, var(--error) 28%, transparent);
 }
 
 .webcam-view__stage {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  border-radius: 24px;
+  border-radius: 28px;
+  background: var(--stage-bg);
+  border: 1px solid var(--border-soft);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 26px 54px rgba(0, 0, 0, 0.32);
+  transition:
+    background 520ms ease,
+    border-color 520ms ease,
+    box-shadow 520ms ease;
+}
+
+.webcam-view__stage::before {
+  content: '';
+  position: absolute;
+  inset: -24%;
+  pointer-events: none;
   background:
-    radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 38%),
-    rgba(2, 6, 23, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+    conic-gradient(from 180deg at 50% 50%, transparent, rgba(255, 255, 255, 0.05), transparent 62%);
+  opacity: 0.34;
+  animation: stage-sheen 14s linear infinite;
+}
+
+.webcam-view__stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--stage-overlay);
+  transition: background 520ms ease;
 }
 
 .webcam-view__stage--mirrored .webcam-view__video {
@@ -80,7 +111,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #020617;
+  background: var(--video-backdrop);
+  filter: saturate(1.02) contrast(1.02);
+  transition:
+    background 520ms ease,
+    filter 320ms ease;
 }
 
 .webcam-view__overlay {
@@ -89,32 +124,34 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: linear-gradient(
-    180deg,
-    rgba(2, 6, 23, 0.12),
-    rgba(2, 6, 23, 0.8)
-  );
+  background: var(--stage-scrim);
+  transition: background 520ms ease;
 }
 
 .webcam-view__overlay-card {
   width: min(100%, 26rem);
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.3);
+  padding: 22px 24px;
+  border-radius: 24px;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.34);
+  transition:
+    background 520ms ease,
+    border-color 520ms ease;
 }
 
 .webcam-view__overlay-card h3 {
   margin: 0 0 8px;
-  color: #f8fafc;
-  font-size: 1rem;
+  color: var(--heading);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  line-height: 0.96;
 }
 
 .webcam-view__overlay-card p {
   margin: 0;
-  color: rgba(226, 232, 240, 0.8);
-  line-height: 1.6;
+  color: var(--text-muted);
+  line-height: 1.72;
 }
 
 .webcam-view__toolbar {
@@ -132,33 +169,79 @@
 }
 
 .webcam-view__button {
-  border: 0;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-radius: 999px;
-  min-height: 42px;
-  padding: 0 16px;
-  background: #e2e8f0;
-  color: #020617;
-  font-weight: 700;
-  cursor: pointer;
+  min-height: 46px;
+  padding: 0 18px;
+  background:
+    var(--button-primary-bg),
+    var(--interactive-sheen);
+  background-size: 100% 100%, 240% 100%;
+  background-position: 50% 50%, 112% 50%;
+  color: var(--button-primary-text);
+  font-weight: 800;
+  will-change: transform, box-shadow, background-position;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease,
+    box-shadow 180ms ease,
+    background 520ms ease,
+    background-position 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 520ms ease,
+    color 280ms ease;
 }
 
 .webcam-view__button:hover {
-  background: #f8fafc;
+  transform: translateY(-2px) scale(1.008);
+  filter: brightness(1.04);
+  background-position: 50% 50%, -18% 50%;
+  box-shadow: var(--button-primary-shadow);
+}
+
+.webcam-view__button:active {
+  transform: translateY(0) scale(0.988);
+}
+
+.webcam-view__button:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--button-primary-shadow),
+    var(--interactive-focus-ring);
 }
 
 .webcam-view__button--secondary {
-  background: rgba(30, 41, 59, 0.9);
-  color: #e2e8f0;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background:
+    var(--button-secondary-bg),
+    var(--interactive-sheen);
+  background-size: 100% 100%, 100% 100%, 240% 100%;
+  background-position: 50% 50%, 50% 50%, 112% 50%;
+  color: var(--button-secondary-text);
+  border: 1px solid var(--button-secondary-border);
+  box-shadow: none;
 }
 
 .webcam-view__button--secondary:hover {
-  background: rgba(51, 65, 85, 0.95);
+  filter: brightness(1.03);
+  background-position: 50% 50%, 50% 50%, -18% 50%;
+  box-shadow: none;
 }
 
 .webcam-view__button:disabled {
   opacity: 0.55;
   cursor: progress;
+}
+
+@keyframes stage-sheen {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1.08);
+  }
 }
 
 @media (max-width: 800px) {
@@ -169,6 +252,6 @@
   }
 
   .webcam-view__stage {
-    border-radius: 20px;
+    border-radius: 24px;
   }
 }
