@@ -63,14 +63,6 @@ function isFullscreenSupported(documentRef: FullscreenDocument) {
   )
 }
 
-function isFullscreenElementSupported(element: FullscreenElement | null) {
-  if (!element) {
-    return false
-  }
-
-  return !!(element.requestFullscreen || element.webkitRequestFullscreen)
-}
-
 async function enterFullscreen(element: FullscreenElement) {
   if (element.requestFullscreen) {
     await element.requestFullscreen()
@@ -118,17 +110,8 @@ export function WebcamView({
       return false
     }
 
-    const fullscreenDocument = document as FullscreenDocument
-    const fullscreenElement = (
-      webcam.containerRef.current ??
-      document.documentElement
-    ) as FullscreenElement
-
-    return (
-      isFullscreenSupported(fullscreenDocument) &&
-      isFullscreenElementSupported(fullscreenElement)
-    )
-  }, [webcam.containerRef])
+    return isFullscreenSupported(document as FullscreenDocument)
+  }, [])
 
   useEffect(() => {
     if (typeof document === 'undefined') {

@@ -207,20 +207,6 @@ function CalibrationProgress({
   )
 }
 
-function getRepHudLabel(
-  isSquatProfile: boolean,
-  completedReps: number,
-  targetReps: number | null,
-) {
-  if (targetReps === null) {
-    return 'Choose reps'
-  }
-
-  return isSquatProfile
-    ? `Reps ${completedReps}/${targetReps}`
-    : `Target ${targetReps} reps`
-}
-
 function CategoryCard({
   category,
   onClick,
@@ -887,11 +873,9 @@ export function FormCheckFlow() {
                     : 'setup'}
               </span>
               <span className="status-pill status-pill--muted">
-                {getRepHudLabel(
-                  isSquatProfile,
-                  assessment.completedReps,
-                  targetReps,
-                )}
+                {isSquatProfile
+                  ? `Reps ${assessment.completedReps}/${assessment.targetReps}`
+                  : `Target ${targetReps} reps`}
               </span>
               <span className="status-pill status-pill--muted">
                 Visibility {formatPercent(frameMetrics?.averageVisibility)}
@@ -1342,7 +1326,6 @@ export function FormCheckFlow() {
                         type="button"
                         className="form-flow__button form-flow__button--secondary"
                         onClick={() => {
-                          calibration.resetBaseline()
                           assessment.resetSession()
                           setStep('calibration')
                         }}

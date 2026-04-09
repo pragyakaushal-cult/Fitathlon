@@ -29,14 +29,14 @@ export interface UseCalibrationReturn extends CalibrationState {
 }
 
 const DEFAULT_MIN_VISIBILITY = 0.6
-const AUTO_CAPTURE_HOLD_MS = 1000
-const READY_PROGRESS = 0.35
-const MAX_MOVEMENT_DELTA_NORMALIZED = 0.04
-const FRAME_RESET_GAP_MS = 500
+const AUTO_CAPTURE_HOLD_MS = 1400
+const MIN_MANUAL_CAPTURE_PROGRESS = 0.55
+const MAX_MOVEMENT_DELTA_NORMALIZED = 0.018
+const FRAME_RESET_GAP_MS = 360
 const FRAME_MARGIN = 0.03
 const MIN_BODY_HEIGHT_NORMALIZED = 0.26
-const MIN_STANDING_KNEE_ANGLE_DEG = 142
-const MAX_TORSO_LEAN_DEG = 22
+const MIN_STANDING_KNEE_ANGLE_DEG = 150
+const MAX_TORSO_LEAN_DEG = 18
 const SAMPLE_WINDOW_LIMIT = 48
 
 interface CalibrationSnapshot {
@@ -350,6 +350,11 @@ export function useCalibration({
       return false
     }
 
+    if (progress < MIN_MANUAL_CAPTURE_PROGRESS) {
+      setError('Hold still for another moment before capturing the baseline.')
+      return false
+    }
+
     const nextBaseline =
       averageBaselineSamples(stabilityWindowRef.current.samples) ??
       snapshot.baselineCandidate
@@ -361,7 +366,7 @@ export function useCalibration({
 
     commitBaseline(nextBaseline)
     return true
-  }, [commitBaseline, snapshot])
+  }, [commitBaseline, progress, snapshot])
 
   const resetBaseline = useCallback(() => {
     setBaseline(null)
@@ -462,7 +467,8 @@ export function useCalibration({
     if (error) {
       return {
         status: 'error' as const,
-        canCapture: !!snapshot?.isFrameEligible,
+        canCapture:
+          !!snapshot?.isFrameEligible && progress >= MIN_MANUAL_CAPTURE_PROGRESS,
         baseline: null,
         capturedAtMs: null,
         progress,
@@ -494,15 +500,15 @@ export function useCalibration({
 
       return {
         status:
-          progress >= READY_PROGRESS ? ('ready' as const) : ('stabilizing' as const),
-        canCapture: true,
+          progress >= MIN_MANUAL_CAPTURE_PROGRESS ? ('ready' as const) : ('stabilizing' as const),
+        canCapture: progress >= MIN_MANUAL_CAPTURE_PROGRESS,
         baseline: null,
         capturedAtMs: null,
         progress,
         message:
-          progress >= READY_PROGRESS
-            ? `Hold steady. Auto-capture will finish in about ${remainingSeconds} second${remainingSeconds === 1 ? '' : 's'}, or tap capture now.`
-            : 'Hold still for a brief moment. If framing already looks correct, you can tap capture now.',
+          progress >= MIN_MANUAL_CAPTURE_PROGRESS
+            ? `Hold steady. Auto-capture will finish in about ${remainingSeconds} second${remainingSeconds === 1 ? '' : 's'}.`
+            : 'Hold still in the same stance while calibration stabilizes.',
         error: null,
         captureBaseline,
         resetBaseline,
