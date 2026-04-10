@@ -6,6 +6,7 @@ import type { ExerciseId } from './config'
 
 export type DemoExerciseId =
   | 'bodyweight_squat'
+  | 'sumo_squat'
   | 'forward_lunge'
   | 'conventional_deadlift'
   | 'push_ups'
@@ -94,6 +95,71 @@ export const DEMO_EXERCISE_PRESETS: Record<
         title: 'Hit parallel',
         message: 'The squat is stopping short of your working depth.',
         recommendation: 'Sit slightly deeper before driving back up.',
+      },
+    },
+  },
+  sumo_squat: {
+    id: 'sumo_squat',
+    label: 'Sumo Squat',
+    requiresCalibration: true,
+    trackingSummary:
+      'Wide-stance squat assessment with calibration, rep counting, depth tracking, and stance-specific coaching.',
+    assessmentIntro:
+      'Track sumo squat reps with wide-stance depth, knee control, and upright torso coaching.',
+    idleCue:
+      'Sit between the hips, reach depth under control, and stand tall to complete each rep.',
+    resultTitle: 'Sumo squat summary',
+    repTracking: {
+      kind: 'existing-squat',
+    },
+    repConfig: {
+      descendingKneeAngleDeg: 166,
+      bottomKneeAngleDeg: 124,
+      ascendingKneeAngleDeg: 138,
+      standingKneeAngleDeg: 162,
+      descendingHipDepth: {
+        normalized: 0.04,
+        absolute: 0.04,
+      },
+      bottomHipDepth: {
+        normalized: 0.1,
+        absolute: 0.1,
+      },
+      ascendingHipDepth: {
+        normalized: 0.08,
+        absolute: 0.08,
+      },
+      standingHipDepth: {
+        normalized: 0.03,
+        absolute: 0.03,
+      },
+      depthDeltaEpsilon: {
+        normalized: 0.004,
+        absolute: 0.004,
+      },
+      minRepIntervalMs: 700,
+    },
+    ruleConfig: {
+      squatTorsoLeanWarningDeg: 32,
+      squatKneeCollapseRatioThreshold: 0.76,
+      squatInsufficientDepthNormalized: 0.16,
+    },
+    scoreWeights: {
+      kneeCollapse: 34,
+      insufficientDepth: 26,
+      excessiveTorsoLean: 24,
+      leftRightAsymmetry: 20,
+    },
+    warningOverrides: {
+      insufficientDepth: {
+        title: 'Sit deeper into the stance',
+        message: 'The rep is stopping short for your sumo squat depth.',
+        recommendation: 'Sit between the hips a little deeper before standing up.',
+      },
+      kneeCollapse: {
+        title: 'Track the knees over the toes',
+        message: 'The knees are drifting inward during the sumo squat.',
+        recommendation: 'Push the knees out and keep the stance active through the floor.',
       },
     },
   },

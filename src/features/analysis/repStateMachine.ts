@@ -118,6 +118,8 @@ function createDebugInfo(
 ): RepDetectionDebugInfo {
   const timestampMs = metrics?.timestampMs ?? null
   const depthMetric = metrics ? getEffectiveDepthMetric(metrics) : { value: null, mode: null as DepthMode }
+  const kneeAngleDeg =
+    metrics?.minKneeAngleDeg ?? metrics?.averageKneeAngleDeg ?? null
   const hipDepthDelta =
     depthMetric.value !== null && state.previousHipDepth !== null
       ? depthMetric.value - state.previousHipDepth
@@ -130,7 +132,7 @@ function createDebugInfo(
   return {
     timestampMs,
     averageVisibility: metrics?.averageVisibility ?? null,
-    kneeAngleDeg: metrics?.averageKneeAngleDeg ?? null,
+    kneeAngleDeg,
     hipDepth: depthMetric.value,
     hipDepthMode: depthMetric.mode,
     previousHipDepth: state.previousHipDepth,
@@ -213,7 +215,7 @@ export class RepStateMachine {
     const depthMetric = getEffectiveDepthMetric(metrics)
     const hipDepth = depthMetric.value
     const depthMode = depthMetric.mode
-    const kneeAngle = metrics.averageKneeAngleDeg
+    const kneeAngle = metrics.minKneeAngleDeg ?? metrics.averageKneeAngleDeg
     const averageVisibility = metrics.averageVisibility
 
     const descendingHipDepthThreshold = getThresholdValue(
